@@ -1,4 +1,7 @@
 <?php
+
+namespace BG\Raven;
+
 /**
  * Small helper class to inspect the stacktrace
  *

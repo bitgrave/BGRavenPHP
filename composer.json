@@ -1,5 +1,5 @@
 {
-    "name": "raven/raven",
+    "name": "bitgrave/raven",
     "type": "library",
     "description": "A PHP client for Sentry (http://getsentry.com)",
     "keywords": ["log", "logging"],
@@ -9,6 +9,10 @@
         {
             "name": "David Cramer",
             "email": "dcramer@gmail.com"
+        },
+        {
+            "name": "Patrick Paechnatz",
+            "email": "patrick.paechnatz@gmail.com"
         }
     ],
     "require-dev": {
@@ -30,7 +34,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.8.x-dev"
+            "dev-master": "1.0.x-dev"
         }
     }
 }

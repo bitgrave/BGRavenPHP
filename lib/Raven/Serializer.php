@@ -15,6 +15,8 @@
  * limitations under the License.
 */
 
+namespace BG\Raven;
+
 /**
  * This helper is based on code from Facebook's Phabricator project
  *

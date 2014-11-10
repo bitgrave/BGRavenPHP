@@ -8,6 +8,8 @@
  * file that was distributed with this source code.
  */
 
+namespace BG\Raven;
+
 /**
  * Raven PHP Client
  *
