@@ -9,8 +9,6 @@
  * file that was distributed with this source code.
  */
 
-namespace BG\Raven;
-
 /**
  * Event handlers for exceptions and errors
  *

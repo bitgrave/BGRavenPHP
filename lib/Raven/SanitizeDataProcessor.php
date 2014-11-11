@@ -1,7 +1,4 @@
 <?php
-
-namespace BG\Raven;
-
 /**
  * Asterisk out passwords from password fields in frames, http,
  * and basic extra data.

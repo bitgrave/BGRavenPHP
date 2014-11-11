@@ -1,7 +1,4 @@
 <?php
-
-namespace BG\Raven;
-
 /**
  * Base class for data processing.
  *

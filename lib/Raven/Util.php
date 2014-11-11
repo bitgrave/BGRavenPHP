@@ -1,7 +1,5 @@
 <?php
 
-namespace BG\Raven;
-
 /*
  * This file is part of Raven.
  *

@@ -1,7 +1,4 @@
 <?php
-
-namespace BG\Raven;
-
 /**
  * Storage for additional client context.
  *

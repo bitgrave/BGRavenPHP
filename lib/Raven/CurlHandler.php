@@ -8,8 +8,6 @@
  * file that was distributed with this source code.
  */
 
-namespace BG\Raven;
-
 /**
  * Asynchronous Curl connection manager.
  *
@@ -29,7 +27,7 @@ class Raven_CurlHandler
         $this->options = $options;
         $this->multi_handle = curl_multi_init();
         $this->requests = array();
-        $this->join_timeout = 5;
+        $this->join_timeout = 9;
 
         register_shutdown_function(array($this, 'join'));
     }
@@ -42,7 +40,6 @@ class Raven_CurlHandler
     public function enqueue($url, $data=null, $headers=array())
     {
         $ch = curl_init();
-
         $new_headers = array();
         foreach ($headers as $key => $value) {
             array_push($new_headers, $key .': '. $value);
@@ -51,6 +48,11 @@ class Raven_CurlHandler
         curl_setopt($ch, CURLOPT_HTTPHEADER, $new_headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_URL, $url);
+
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_FAILONERROR, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 
         curl_setopt_array($ch, $this->options);
 

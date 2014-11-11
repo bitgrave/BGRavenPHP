@@ -8,8 +8,6 @@
  * file that was distributed with this source code.
  */
 
-namespace BG\Raven;
-
 /**
  * Raven PHP Client
  *
@@ -59,14 +57,14 @@ class Raven_Client
         $this->site = Raven_Util::get($options, 'site', $this->_server_variable('SERVER_NAME'));
         $this->tags = Raven_Util::get($options, 'tags', array());
         $this->trace = (bool) Raven_Util::get($options, 'trace', true);
-        $this->timeout = Raven_Util::get($options, 'timeout', 2);
+        $this->timeout = Raven_Util::get($options, 'timeout', 60);
         $this->exclude = Raven_Util::get($options, 'exclude', array());
         $this->severity_map = NULL;
         $this->shift_vars = (bool) Raven_Util::get($options, 'shift_vars', true);
         $this->http_proxy = Raven_Util::get($options, 'http_proxy');
         $this->extra_data = Raven_Util::get($options, 'extra', array());
         $this->send_callback = Raven_Util::get($options, 'send_callback', null);
-        $this->curl_method = Raven_Util::get($options, 'curl_method', 'sync');
+        $this->curl_method = Raven_Util::get($options, 'curl_method', 'exec');
         $this->curl_path = Raven_Util::get($options, 'curl_path', 'curl');
         $this->ca_cert = Raven_util::get($options, 'ca_cert', $this->get_default_ca_cert());
 		$this->curl_ssl_version = Raven_Util::get($options, 'curl_ssl_version');
@@ -536,8 +534,6 @@ class Raven_Client
     {
         $options = array(
             CURLOPT_VERBOSE => false,
-            CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_CAINFO => $this->ca_cert,
             CURLOPT_USERAGENT => 'raven-php/' . self::VERSION,
         );
@@ -575,15 +571,19 @@ class Raven_Client
         }
     }
 
-    private function send_http_asynchronous_curl_exec($url, $data, $headers) {
-        // TODO(dcramer): support ca_cert
+    private function send_http_asynchronous_curl_exec($url, $data, $headers)
+    {
         $cmd = $this->curl_path.' -X POST ';
+        $cmd .= $url . ' ';
         foreach ($headers as $key => $value) {
-            $cmd .= '-H \''. $key. ': '. $value. '\' ';
+            if ($key !== 'User-Agent') {
+                $cmd .= '-H \''. $key. ': '. $value. '\' ';
+            }
         }
+
         $cmd .= '-d \''. $data .'\' ';
-        $cmd .= '\''. $url .'\' ';
-        $cmd .= '-m 5 ';  // 5 second timeout for the whole process (connect + send)
+        $cmd .= '-m 300 ';
+        $cmd .= '--insecure '; // ignore ssl verification and force fetch
         $cmd .= '> /dev/null 2>&1 &'; // ensure exec returns immediately while curl runs in the background
 
         exec($cmd);
@@ -604,14 +604,24 @@ class Raven_Client
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
+        curl_setopt($curl, CURLOPT_TIMEOUT_MS, 3000);
+
         $options = $this->get_curl_options();
+
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($curl, CURLOPT_FRESH_CONNECT, true);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_FAILONERROR, 0);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
+
         $ca_cert = $options[CURLOPT_CAINFO];
         unset($options[CURLOPT_CAINFO]);
         curl_setopt_array($curl, $options);
 
         curl_exec($curl);
-
         $errno = curl_errno($curl);
+
         // CURLE_SSL_CACERT || CURLE_SSL_CACERT_BADFILE
         if ($errno == 60 || $errno == 77) {
             curl_setopt($curl, CURLOPT_CAINFO, $ca_cert);
